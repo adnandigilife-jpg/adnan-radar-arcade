@@ -11,21 +11,17 @@ st.set_page_config(
 
 # 2. ÜST BAŞLIK VE SKOR ALANI
 st.markdown("<h1 style='text-align: center; color: #00FF66; font-family: monospace;'>🕹️ ADNAN RADAR ARCADE v1.1</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #888; font-family: monospace;'>PC: Yön Tuşları / W-A-S-D<br>MOBİL: Ekranı Parmağınla İstediğin Yöne Kaydır (Swipe)</p>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #888; font-family: monospace;'>PC: Yön Tuşları / W-A-S-D<br>MOBİL: Parmağınla İstediğin Yöne Kaydır (Swipe)</h3>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 3. GELİŞMİŞ MOBİL + PC DOKUNMATİK SNAKE MOTORU
-game_html = """
-<div id="gameContainer" style="text-align: center; font-family: 'Courier New', Courier, monospace; background-color: #0a0a0a; padding: 15px; border-radius: 10px; touch-action: none;">
-    <!-- Skor Paneli -->
+# 3. GELİŞMİŞ MOBİL + PC OYUN MOTORU METNİ
+game_code = """
+<div id="gameContainer" style="text-align: center; font-family: 'Courier New', Courier, monospace; background-color: #0a0a0a; padding: 15px; border-radius: 10px; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;">
     <div style="display: flex; justify-content: space-around; margin-bottom: 15px;">
         <div style="font-size: 20px; color: #ffffff; font-weight: bold;">SKOR: <span id="score" style="color: #00FF66;">0</span></div>
         <div style="font-size: 20px; color: #ffffff; font-weight: bold;">EN YÜKSEK SKOR: <span id="highScore" style="color: #FF3366;">0</span></div>
     </div>
-    
-    <!-- Oyun Alanı -->
     <canvas id="gameCanvas" width="400" height="400" style="border: 4px solid #00FF66; background-color: #111111; box-shadow: 0px 0px 20px rgba(0, 255, 102, 0.3); border-radius: 5px; max-width: 100%; height: auto;"></canvas>
-    
     <div style="margin-top: 15px; color: #555; font-size: 13px; font-weight: bold;">
         [PC] Tuşları Kullan | [MOBİL] Parmağınla Kaydır veya Yeniden Başlamak İçin Ekrana Çift Dokun!
     </div>
@@ -91,7 +87,7 @@ game_html = """
     function loop() {
         requestAnimationFrame(loop);
 
-        if (++count < 8) { return; } // Mobil hassasiyeti için hızı çok hafif esnettim
+        if (++count < 8) { return; }
         count = 0;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -109,11 +105,9 @@ game_html = """
             snake.cells.pop();
         }
 
-        // Elma Çiz
         ctx.fillStyle = '#FF3366';
         ctx.fillRect(apple.x, apple.y, grid-1, grid-1);
 
-        // Yılanı Çiz
         snake.cells.forEach(function(cell, index) {
             if (index === 0) {
                 ctx.fillStyle = '#00FF66';
@@ -138,7 +132,6 @@ game_html = """
         });
     }
 
-    // --- 💻 PC KLAVYE KONTROLLERİ ---
     document.addEventListener('keydown', function(e) {
         if ((e.which === 37 || e.which === 65) && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; e.preventDefault(); }
         else if ((e.which === 38 || e.which === 87) && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; e.preventDefault(); }
@@ -147,7 +140,6 @@ game_html = """
         else if (e.which === 32) { resetGame(); e.preventDefault(); }
     });
 
-    // --- 📱 MOBİL DOKUNMATİK (SWIPE) KONTROLLERİ ---
     let touchStartX = 0;
     let touchStartY = 0;
     let touchEndX = 0;
@@ -168,25 +160,15 @@ game_html = """
         const xDiff = touchEndX - touchStartX;
         const yDiff = touchEndY - touchStartY;
         
-        // Hangi yöne daha uzun çekildiğini hesapla (Yatay mı dikey mi)
         if (Math.abs(xDiff) > Math.abs(yDiff)) {
-            // Yatay hareket
-            if (xDiff > 30 && snake.dx === 0) {
-                snake.dx = grid; snake.dy = 0; // Sağa
-            } else if (xDiff < -30 && snake.dx === 0) {
-                snake.dx = -grid; snake.dy = 0; // Sola
-            }
+            if (xDiff > 30 && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+            else if (xDiff < -30 && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
         } else {
-            // Dikey hareket
-            if (yDiff > 30 && snake.dy === 0) {
-                snake.dy = grid; snake.dx = 0; // Aşağı
-            } else if (yDiff < -30 && snake.dy === 0) {
-                snake.dy = -grid; snake.dx = 0; // Yukarı
-            }
+            if (yDiff > 30 && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+            else if (yDiff < -30 && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
         }
     }
 
-    // Mobil için Çift Dokunma (Double Tap) ile Oyunu Yeniden Başlatma
     let lastTap = 0;
     gameContainer.addEventListener('touchend', function(e) {
         const currentTime = new Date().getTime();
@@ -201,3 +183,11 @@ game_html = """
     generateApple();
     requestAnimationFrame(loop);
 </script>
+"""
+
+# HTML Kodunu güvenli bir şekilde ekrana basıyoruz
+components.html(game_code, height=530)
+
+# FOOTER
+st.markdown("---")
+st.markdown("<p style='text-align: center; color: #555; font-size: 12px;'>AdnanRadar Projesi kapsamında sıfırdan geliştirilmiştir.</p>", unsafe_allow_html=True)
