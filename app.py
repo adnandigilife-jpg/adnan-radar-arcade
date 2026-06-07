@@ -10,24 +10,24 @@ st.set_page_config(
 )
 
 # 2. ÜST BAŞLIK VE SKOR ALANI
-st.markdown("<h1 style='text-align: center; color: #00FF66; font-family: monospace;'>🕹️ ADNAN RADAR ARCADE v1.0</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #888; font-family: monospace;'>Yön tuşları (W, A, S, D veya Ok Tuşları) ile oynamaya başlayabilirsin. Yeniden başlamak için BOŞLUK (Space) tuşuna bas.</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #00FF66; font-family: monospace;'>🕹️ ADNAN RADAR ARCADE v1.1</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888; font-family: monospace;'>PC: Yön Tuşları / W-A-S-D<br>MOBİL: Ekranı Parmağınla İstediğin Yöne Kaydır (Swipe)</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 3. GELİŞMİŞ RETRO SNAKE OYUN MOTORU (HTML5 + LOCALSTORAGE REKOR SİSTEMİ)
+# 3. GELİŞMİŞ MOBİL + PC DOKUNMATİK SNAKE MOTORU
 game_html = """
-<div style="text-align: center; font-family: 'Courier New', Courier, monospace; background-color: #0a0a0a; padding: 20px; border-radius: 10px;">
+<div id="gameContainer" style="text-align: center; font-family: 'Courier New', Courier, monospace; background-color: #0a0a0a; padding: 15px; border-radius: 10px; touch-action: none;">
     <!-- Skor Paneli -->
     <div style="display: flex; justify-content: space-around; margin-bottom: 15px;">
-        <div style="font-size: 22px; color: #ffffff; font-weight: bold;">SKOR: <span id="score" style="color: #00FF66;">0</span></div>
-        <div style="font-size: 22px; color: #ffffff; font-weight: bold;">EN YÜKSEK SKOR: <span id="highScore" style="color: #FF3366;">0</span></div>
+        <div style="font-size: 20px; color: #ffffff; font-weight: bold;">SKOR: <span id="score" style="color: #00FF66;">0</span></div>
+        <div style="font-size: 20px; color: #ffffff; font-weight: bold;">EN YÜKSEK SKOR: <span id="highScore" style="color: #FF3366;">0</span></div>
     </div>
     
     <!-- Oyun Alanı -->
-    <canvas id="gameCanvas" width="400" height="400" style="border: 4px solid #00FF66; background-color: #111111; box-shadow: 0px 0px 20px rgba(0, 255, 102, 0.3); border-radius: 5px;"></canvas>
+    <canvas id="gameCanvas" width="400" height="400" style="border: 4px solid #00FF66; background-color: #111111; box-shadow: 0px 0px 20px rgba(0, 255, 102, 0.3); border-radius: 5px; max-width: 100%; height: auto;"></canvas>
     
     <div style="margin-top: 15px; color: #555; font-size: 13px; font-weight: bold;">
-        [W-A-S-D] veya [Ok Tuşları] - HAREKET | [Space] - YENİDEN BAŞLA
+        [PC] Tuşları Kullan | [MOBİL] Parmağınla Kaydır veya Yeniden Başlamak İçin Ekrana Çift Dokun!
     </div>
 </div>
 
@@ -36,12 +36,12 @@ game_html = """
     const ctx = canvas.getContext("2d");
     const scoreElement = document.getElementById("score");
     const highScoreElement = document.getElementById("highScore");
+    const gameContainer = document.getElementById("gameContainer");
 
     const grid = 20;
     let count = 0;
     let score = 0;
     
-    // Tarayıcı hafızasından rekoru çek
     let highScore = localStorage.getItem("snake_high_score") || 0;
     highScoreElement.innerText = highScore;
     
@@ -61,7 +61,6 @@ game_html = """
     }
 
     function resetGame() {
-        // Skor rekoru kırdıysa hafızaya kaydet
         if (score > highScore) {
             highScore = score;
             localStorage.setItem("snake_high_score", highScore);
@@ -82,8 +81,6 @@ game_html = """
     function generateApple() {
         apple.x = getRandomInt(0, 20) * grid;
         apple.y = getRandomInt(0, 20) * grid;
-        
-        // Yemin yılanın üstünde çıkmasını engelle
         snake.cells.forEach(function(cell) {
             if (cell.x === apple.x && cell.y === apple.y) {
                 generateApple();
@@ -94,46 +91,38 @@ game_html = """
     function loop() {
         requestAnimationFrame(loop);
 
-        // Oyun hızı ayarı (Sayı büyüdükçe yılan yavaşlar, ideal hız 6-7 arasıdır)
-        if (++count < 7) { return; }
+        if (++count < 8) { return; } // Mobil hassasiyeti için hızı çok hafif esnettim
         count = 0;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Yılanın kafasını ilerlet
         snake.x += snake.dx;
         snake.y += snake.dy;
 
-        // Duvarlardan geçme özelliği yerine çarpmayı ölüm sayıyoruz (Adamakıllı zorluk)
         if (snake.x < 0 || snake.x >= canvas.width || snake.y < 0 || snake.y >= canvas.height) {
             resetGame();
         }
 
-        // Gövde takibi
         snake.cells.unshift({x: snake.x, y: snake.y});
 
         if (snake.cells.length > snake.maxCells) {
             snake.cells.pop();
         }
 
-        // Yemi Çiz (Neon Kırmızı/Turuncu Elma)
+        // Elma Çiz
         ctx.fillStyle = '#FF3366';
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#FF3366';
         ctx.fillRect(apple.x, apple.y, grid-1, grid-1);
 
-        // Yılanı Çiz (Neon Yeşil)
-        ctx.shadowBlur = 0; // Gövdede parlamayı kapat net görünsün
+        // Yılanı Çiz
         snake.cells.forEach(function(cell, index) {
             if (index === 0) {
-                ctx.fillStyle = '#00FF66'; // Kafa parlak yeşil
+                ctx.fillStyle = '#00FF66';
             } else {
-                ctx.fillStyle = '#00CC52'; // Gövde koyu yeşil
+                ctx.fillStyle = '#00CC52';
             }
             
             ctx.fillRect(cell.x, cell.y, grid-1, grid-1);
 
-            // Yılan yemi yedi mi?
             if (cell.x === apple.x && cell.y === apple.y) {
                 snake.maxCells++;
                 score += 10;
@@ -141,7 +130,6 @@ game_html = """
                 generateApple();
             }
 
-            // Kendine çarpma kontrolü
             for (let i = index + 1; i < snake.cells.length; i++) {
                 if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
                     resetGame();
@@ -150,44 +138,66 @@ game_html = """
         });
     }
 
-    // Tuş Kontrolleri (Ters yöne ani dönüş engelli)
+    // --- 💻 PC KLAVYE KONTROLLERİ ---
     document.addEventListener('keydown', function(e) {
-        // Sol (A veya Sol Ok)
-        if ((e.which === 37 || e.which === 65) && snake.dx === 0) {
-            snake.dx = -grid; snake.dy = 0;
-            e.preventDefault();
+        if ((e.which === 37 || e.which === 65) && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; e.preventDefault(); }
+        else if ((e.which === 38 || e.which === 87) && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; e.preventDefault(); }
+        else if ((e.which === 39 || e.which === 68) && snake.dx === 0) { snake.dx = grid; snake.dy = 0; e.preventDefault(); }
+        else if ((e.which === 40 || e.which === 83) && snake.dy === 0) { snake.dy = grid; snake.dx = 0; e.preventDefault(); }
+        else if (e.which === 32) { resetGame(); e.preventDefault(); }
+    });
+
+    // --- 📱 MOBİL DOKUNMATİK (SWIPE) KONTROLLERİ ---
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    gameContainer.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, false);
+
+    gameContainer.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+    }, false);
+
+    function handleSwipe() {
+        const xDiff = touchEndX - touchStartX;
+        const yDiff = touchEndY - touchStartY;
+        
+        // Hangi yöne daha uzun çekildiğini hesapla (Yatay mı dikey mi)
+        if (Math.abs(xDiff) > Math.abs(yDiff)) {
+            // Yatay hareket
+            if (xDiff > 30 && snake.dx === 0) {
+                snake.dx = grid; snake.dy = 0; // Sağa
+            } else if (xDiff < -30 && snake.dx === 0) {
+                snake.dx = -grid; snake.dy = 0; // Sola
+            }
+        } else {
+            // Dikey hareket
+            if (yDiff > 30 && snake.dy === 0) {
+                snake.dy = grid; snake.dx = 0; // Aşağı
+            } else if (yDiff < -30 && snake.dy === 0) {
+                snake.dy = -grid; snake.dx = 0; // Yukarı
+            }
         }
-        // Yukarı (W veya Yukarı Ok)
-        else if ((e.which === 38 || e.which === 87) && snake.dy === 0) {
-            snake.dy = -grid; snake.dx = 0;
-            e.preventDefault();
-        }
-        // Sağ (D veya Sağ Ok)
-        if ((e.which === 39 || e.which === 68) && snake.dx === 0) {
-            snake.dx = grid; snake.dy = 0;
-            e.preventDefault();
-        }
-        // Aşağı (S veya Aşağı Ok)
-        else if ((e.which === 40 || e.which === 83) && snake.dy === 0) {
-            snake.dy = grid; snake.dx = 0;
-            e.preventDefault();
-        }
-        // Space (Boşluk) ile Manuel Reset
-        else if (e.which === 32) {
+    }
+
+    // Mobil için Çift Dokunma (Double Tap) ile Oyunu Yeniden Başlatma
+    let lastTap = 0;
+    gameContainer.addEventListener('touchend', function(e) {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) {
             resetGame();
             e.preventDefault();
         }
+        lastTap = currentTime;
     });
 
-    // İlk elmayı üret ve motoru çalıştır
     generateApple();
     requestAnimationFrame(loop);
 </script>
-"""
-
-# HTML Bileşenini ekrana basıyoruz
-components.html(game_html, height=520)
-
-# FOOTER BİLGİSİ
-st.markdown("---")
-st.markdown("<p style='text-align: center; color: #555; font-size: 12px;'>AdnanRadar Projesi kapsamında sıfırdan geliştirilmiştir. Veriler tarayıcı önbelleğinde saklanır.</p>", unsafe_allow_html=True)
