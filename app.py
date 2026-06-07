@@ -9,21 +9,38 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 2. ÜST BAŞLIK VE SKOR ALANI
-st.markdown("<h1 style='text-align: center; color: #00FF66; font-family: monospace;'>🕹️ ADNAN RADAR ARCADE v1.1</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #888; font-family: monospace;'>PC: Yön Tuşları / W-A-S-D<br>MOBİL: Parmağınla İstediğin Yöne Kaydır (Swipe)</h3>", unsafe_allow_html=True)
+# 2. ÜST BAŞLIK
+st.markdown("<h1 style='text-align: center; color: #00FF66; font-family: monospace;'>🕹️ ADNAN RADAR ARCADE v1.2</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888; font-family: monospace;'>PC: Yön Tuşları / W-A-S-D<br>MOBİL: Ekrandaki Dokunmatik Tuşları Kullanın</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 3. GELİŞMİŞ MOBİL + PC OYUN MOTORU METNİ
+# 3. GELİŞMİŞ MOBİL DOKUNMATİK BUTONLU MOTOR
 game_code = """
-<div id="gameContainer" style="text-align: center; font-family: 'Courier New', Courier, monospace; background-color: #0a0a0a; padding: 15px; border-radius: 10px; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;">
+<div id="gameContainer" style="text-align: center; font-family: 'Courier New', Courier, monospace; background-color: #0a0a0a; padding: 15px; border-radius: 10px; user-select: none; -webkit-user-select: none;">
+    
+    <!-- Skor Paneli -->
     <div style="display: flex; justify-content: space-around; margin-bottom: 15px;">
         <div style="font-size: 20px; color: #ffffff; font-weight: bold;">SKOR: <span id="score" style="color: #00FF66;">0</span></div>
         <div style="font-size: 20px; color: #ffffff; font-weight: bold;">EN YÜKSEK SKOR: <span id="highScore" style="color: #FF3366;">0</span></div>
     </div>
+    
+    <!-- Oyun Alanı -->
     <canvas id="gameCanvas" width="400" height="400" style="border: 4px solid #00FF66; background-color: #111111; box-shadow: 0px 0px 20px rgba(0, 255, 102, 0.3); border-radius: 5px; max-width: 100%; height: auto;"></canvas>
-    <div style="margin-top: 15px; color: #555; font-size: 13px; font-weight: bold;">
-        [PC] Tuşları Kullan | [MOBİL] Parmağınla Kaydır veya Yeniden Başlamak İçin Ekrana Çift Dokun!
+    
+    <!-- 📱 MOBİL DOKUNMATİK YÖN TUŞLARI TAKIMI -->
+    <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <!-- Yukarı Butonu -->
+        <button id="btnUp" style="width: 70px; height: 55px; background-color: #222; color: #00FF66; border: 2px solid #00FF66; border-radius: 10px; font-size: 24px; font-weight: bold; font-family: monospace; box-shadow: 0 4px #111; active { transform: translateY(4px); box-shadow: none; }">▲</button>
+        
+        <!-- Sol - Yeniden Başla - Sağ Butonları -->
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <button id="btnLeft" style="width: 70px; height: 55px; background-color: #222; color: #00FF66; border: 2px solid #00FF66; border-radius: 10px; font-size: 24px; font-weight: bold; font-family: monospace; box-shadow: 0 4px #111;">◀</button>
+            <button id="btnReset" style="width: 60px; height: 45px; background-color: #333; color: #FF3366; border: 2px solid #FF3366; border-radius: 8px; font-size: 12px; font-weight: bold; font-family: monospace;">YENİ</button>
+            <button id="btnRight" style="width: 70px; height: 55px; background-color: #222; color: #00FF66; border: 2px solid #00FF66; border-radius: 10px; font-size: 24px; font-weight: bold; font-family: monospace; box-shadow: 0 4px #111;">▶</button>
+        </div>
+        
+        <!-- Aşağı Butonu -->
+        <button id="btnDown" style="width: 70px; height: 55px; background-color: #222; color: #00FF66; border: 2px solid #00FF66; border-radius: 10px; font-size: 24px; font-weight: bold; font-family: monospace; box-shadow: 0 4px #111;">▼</button>
     </div>
 </div>
 
@@ -32,7 +49,6 @@ game_code = """
     const ctx = canvas.getContext("2d");
     const scoreElement = document.getElementById("score");
     const highScoreElement = document.getElementById("highScore");
-    const gameContainer = document.getElementById("gameContainer");
 
     const grid = 20;
     let count = 0;
@@ -105,9 +121,11 @@ game_code = """
             snake.cells.pop();
         }
 
+        // Elma Çiz
         ctx.fillStyle = '#FF3366';
         ctx.fillRect(apple.x, apple.y, grid-1, grid-1);
 
+        // Yılanı Çiz
         snake.cells.forEach(function(cell, index) {
             if (index === 0) {
                 ctx.fillStyle = '#00FF66';
@@ -132,6 +150,7 @@ game_code = """
         });
     }
 
+    // --- 💻 KLAVYE KONTROLLERİ ---
     document.addEventListener('keydown', function(e) {
         if ((e.which === 37 || e.which === 65) && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; e.preventDefault(); }
         else if ((e.which === 38 || e.which === 87) && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; e.preventDefault(); }
@@ -140,53 +159,42 @@ game_code = """
         else if (e.which === 32) { resetGame(); e.preventDefault(); }
     });
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
-
-    gameContainer.addEventListener('touchstart', function(e) {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }, false);
-
-    gameContainer.addEventListener('touchend', function(e) {
-        touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY;
-        handleSwipe();
-    }, false);
-
-    function handleSwipe() {
-        const xDiff = touchEndX - touchStartX;
-        const yDiff = touchEndY - touchStartY;
-        
-        if (Math.abs(xDiff) > Math.abs(yDiff)) {
-            if (xDiff > 30 && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
-            else if (xDiff < -30 && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
-        } else {
-            if (yDiff > 30 && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
-            else if (yDiff < -30 && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
-        }
-    }
-
-    let lastTap = 0;
-    gameContainer.addEventListener('touchend', function(e) {
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTap;
-        if (tapLength < 300 && tapLength > 0) {
-            resetGame();
-            e.preventDefault();
-        }
-        lastTap = currentTime;
+    // --- 📱 DOKUNMATİK BUTON KONTROLLERİ (MOBİL) ---
+    document.getElementById('btnUp').addEventListener('touchstart', function(e) {
+        if (snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+        e.preventDefault();
     });
+    document.getElementById('btnDown').addEventListener('touchstart', function(e) {
+        if (snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+        e.preventDefault();
+    });
+    document.getElementById('btnLeft').addEventListener('touchstart', function(e) {
+        if (snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+        e.preventDefault();
+    });
+    document.getElementById('btnRight').addEventListener('touchstart', function(e) {
+        if (snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+        e.preventDefault();
+    });
+    document.getElementById('btnReset').addEventListener('touchstart', function(e) {
+        resetGame();
+        e.preventDefault();
+    });
+
+    // Bilgisayardan fareyle tıklayanlar için de aktif edelim:
+    document.getElementById('btnUp').addEventListener('click', function() { if (snake.dy === 0) { snake.dy = -grid; snake.dx = 0; } });
+    document.getElementById('btnDown').addEventListener('click', function() { if (snake.dy === 0) { snake.dy = grid; snake.dx = 0; } });
+    document.getElementById('btnLeft').addEventListener('click', function() { if (snake.dx === 0) { snake.dx = -grid; snake.dy = 0; } });
+    document.getElementById('btnRight').addEventListener('click', function() { if (snake.dx === 0) { snake.dx = grid; snake.dy = 0; } });
+    document.getElementById('btnReset').addEventListener('click', resetGame);
 
     generateApple();
     requestAnimationFrame(loop);
 </script>
 """
 
-# HTML Kodunu güvenli bir şekilde ekrana basıyoruz
-components.html(game_code, height=530)
+# HTML Bileşeni
+components.html(game_code, height=720)
 
 # FOOTER
 st.markdown("---")
